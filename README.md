@@ -3,8 +3,9 @@
 一个基于 Web 的 Windows 无人值守安装文件 (autounattend.xml) 生成器。
 
 ![.NET 9](https://img.shields.io/badge/.NET-9.0-512BD4)
-![Blazor](https://img.shields.io/badge/Blazor-Server-purple)
+![Blazor](https://img.shields.io/badge/Blazor-WebAssembly-purple)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED)
+[![Docker Image](https://img.shields.io/badge/docker-aaron2024s%2Funattended--generator--web-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/aaron2024s/unattended-generator-web)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ## ✨ 功能特性
@@ -24,12 +25,21 @@
 
 ### 使用 Docker（推荐）
 
+直接拉取已构建好的镜像（每次 push 到 `main` 由 GitHub Actions 自动构建，支持 `linux/amd64` 与 `linux/arm64`）：
+
+```bash
+docker run -d -p 8080:80 --name unattended-generator aaron2024s/unattended-generator-web:latest
+```
+
+也可以在本仓库里自行构建：
+
 ```bash
 # 使用 Docker Compose
 docker compose up -d
 
 # 或直接使用 Docker
-docker run -d -p 8080:8080 --name unattended-generator unattended-generator-web
+docker build -t unattended-generator-web .
+docker run -d -p 8080:80 --name unattended-generator unattended-generator-web
 ```
 
 访问 http://localhost:8080 开始使用。
@@ -52,6 +62,12 @@ dotnet watch run
 
 ## 🐳 Docker 部署
 
+### 拉取镜像
+
+```bash
+docker pull aaron2024s/unattended-generator-web:latest
+```
+
 ### 构建镜像
 
 ```bash
@@ -63,9 +79,8 @@ docker build -t unattended-generator-web .
 ```bash
 docker run -d \
   --name unattended-generator \
-  -p 8080:8080 \
-  -e ASPNETCORE_ENVIRONMENT=Production \
-  unattended-generator-web
+  -p 8080:80 \
+  aaron2024s/unattended-generator-web:latest
 ```
 
 ### 使用 Docker Compose
@@ -76,10 +91,13 @@ docker compose up -d
 
 ## 🔧 配置
 
-| 环境变量 | 默认值 | 描述 |
-|---------|--------|------|
-| `ASPNETCORE_ENVIRONMENT` | `Production` | 运行环境 |
-| `ASPNETCORE_URLS` | `http://+:8080` | 监听地址 |
+镜像内是 nginx 托管的静态站点（不含 .NET 运行时），因此不需要用环境变量配置：
+
+| 项目 | 值 | 描述 |
+|------|-----|------|
+| 容器端口 | `80` | nginx 监听端口，用 `-p <宿主机端口>:80` 映射 |
+| 站点目录 | `/usr/share/nginx/html` | 由 `Dockerfile` 中 `dotnet publish` 的产物填充 |
+| nginx 配置 | `/etc/nginx/nginx.conf` | 取自仓库根目录的 `nginx.conf` |
 
 ## 📁 项目结构
 
