@@ -1,5 +1,8 @@
 ﻿# 构建阶段
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+# --platform=$BUILDPLATFORM：Blazor WASM 的产物（.wasm 运行时 + IL dll + 静态资源）与 CPU 架构无关，
+# 固定用「构建机架构」跑 dotnet publish，可避免 arm64 那条腿落进 QEMU 模拟（慢 5~10 倍且容易崩）。
+# 最终运行镜像 nginx:alpine 仍按目标架构拉取，因此 amd64 / arm64 两份镜像都能正常产出。
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
